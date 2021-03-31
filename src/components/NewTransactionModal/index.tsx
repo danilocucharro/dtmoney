@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import Modal from 'react-modal';
 import imgBotaoFechar from '../../assets/botaoFechar.svg';
 import incomeImg from '../../assets/entradas.svg';
 import outcomeImg from '../../assets/saidas.svg';
+import { api } from '../../services/api';
 import { Container, TransactionTypeContainer, RadioBox } from './styles';
 
 interface NewTransactionModalProps{
@@ -11,7 +12,25 @@ interface NewTransactionModalProps{
 }
 
 export function NewTransactionModal({isOpen, onRequestClose}: NewTransactionModalProps){
+    const [title, setTitle] = useState('');
+    const [value, setValue] = useState(0);
+    const [category, setCategory] = useState('');
+
     const[type, setType] = useState('deposit')
+
+    function handleCreateNewTransaction(event: FormEvent){
+      event.preventDefault();//faz com que os eventos padros de um formulario HTML sejam removidos assim ele nao da um refresh na pagina
+      
+      const data = {
+        title,
+        value,
+        category,
+        type
+      };
+
+      api.post('/transactions', data)
+
+    }
 
     return(
       <Modal
@@ -25,18 +44,20 @@ export function NewTransactionModal({isOpen, onRequestClose}: NewTransactionModa
           <img src={imgBotaoFechar} />
         </button>
 
-        <Container>
+        <Container onSubmit={handleCreateNewTransaction}>
           <h2>Cadastrar Transacao</h2>
 
           <input
             placeholder="Titulo"
-
+            value={title}
+            onChange={event => setTitle(event.target.value)}// quando e digitado um novo valor nesse input ele seta esse novo valor nessa propriedade title
           />
 
           <input
             type="number"
             placeholder="Valor"
-            
+            value={value}
+            onChange={event => setValue(Number(event.target.value))}
           />
 
           <TransactionTypeContainer>
@@ -62,7 +83,9 @@ export function NewTransactionModal({isOpen, onRequestClose}: NewTransactionModa
           </TransactionTypeContainer>
 
           <input
-            placeholder="Categoria"            
+            placeholder="Categoria"
+            value={category}
+            onChange={event => setCategory(event.target.value)}            
           />
 
           <button type="submit">
